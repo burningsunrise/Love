@@ -2,9 +2,9 @@
 
 Donet Core 3.1 application that will grab the mac of the device that you are DIRECTLY connected to (e.g. an ethernet cable connected from your laptop to another laptop). The uses for this is mostly for DHCP reservations when you do not know the MAC of a client or the IP address to SSH in.
 
-## Basic Usage
+## Basic Usage / Requirements
 
-Build with your favorite IDE and you should be able to run it from your console in Linux and Windows! You will be asked for your main ethernet device on first startup, and it will write a file to remember this so you won't have to input it again. If for some reason this changes, go ahead and just delete that file and it will ask again.
+Npcap / Winpcap is required. Build with your favorite IDE and you should be able to run it from your console in Linux and Windows! You will be asked for your main ethernet device on first startup, and it will write a file to remember this so you won't have to input it again. If for some reason this changes, go ahead and just delete that file and it will ask again.
 
 ## TODO
 
