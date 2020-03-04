@@ -19,7 +19,8 @@ namespace Love
         public static void CapturePackets()
         {
             var device = GrabInterface.MainDevice();
-            Console.WriteLine(device.Name);
+            // Wait for the device to become available
+            Thread.Sleep(1000);
             device.OnPacketArrival += new PacketArrivalEventHandler(
                 device_OnPacketArrival);
 
@@ -52,13 +53,30 @@ namespace Love
 
         private static void Cleanup(ICaptureDevice device)
         {
+            try
+            {
+                // Try and wait for the thread
+                Thread.Sleep(1000);
+                device.StopCapture();
+                Console.WriteLine("-- Capture stopped.");
+                //Console.WriteLine(device.Statistics.ToString());
+                device.Close();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+            var macList = new List<string>();
             foreach (var mac in SourceMac)
-                Console.WriteLine(string.Join(":", (from z in mac.GetAddressBytes() select z.ToString("X2")).ToArray()));
-            device.StopCapture();
-            Console.WriteLine("-- Capture stopped.");
-            //Console.WriteLine(device.Statistics.ToString());
-            device.Close();
-            
+            {
+                macList.Add(string.Join(":", mac.GetAddressBytes().Select(x => x.ToString("X2"))));
+            }
+
+            foreach (var mac in macList)
+            {
+                Console.WriteLine($"{mac}");
+            }
         }
         
         private static void device_OnPacketArrival(object sender, CaptureEventArgs e)
