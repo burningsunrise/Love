@@ -12,7 +12,6 @@ namespace Love
         public static ICaptureDevice MainDevice()
         {
             var devFile = @$"{Environment.CurrentDirectory}/device.ini";
-            Console.WriteLine(devFile);
             var devices = CaptureDeviceList.Instance;
             
             foreach(NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
