@@ -12,7 +12,7 @@ namespace Love
 {
     public class PacketCapture
     {
-        public static int PacketLimit { get; set; } = 0;
+        public static int PacketLimit { get; set; }
         public static List<PhysicalAddress> SourceMac { get; set; } = new List<PhysicalAddress>();
         public static PhysicalAddress LocalMac { get; set; }
 
@@ -21,14 +21,13 @@ namespace Love
             var device = GrabInterface.MainDevice();
             // Wait for the device to become available
             Thread.Sleep(1000);
-            device.OnPacketArrival += new PacketArrivalEventHandler(
-                device_OnPacketArrival);
+            device.OnPacketArrival += device_OnPacketArrival;
 
             var readTimeoutMilliseconds = 1000;
             if (device is NpcapDevice)
             {
                 var nPcap = device as NpcapDevice;
-                nPcap.Open(SharpPcap.Npcap.OpenFlags.DataTransferUdp | SharpPcap.Npcap.OpenFlags.NoCaptureLocal,
+                nPcap.Open(OpenFlags.DataTransferUdp | OpenFlags.NoCaptureLocal,
                     readTimeoutMilliseconds);
             }
             else if (device is LibPcapLiveDevice)
@@ -38,7 +37,7 @@ namespace Love
             }
             else
             {
-                throw new InvalidOperationException("Unknown device type of " + device.GetType().ToString());
+                throw new InvalidOperationException("Unknown device type of " + device.GetType());
             }
             
             Console.WriteLine("-- Started Capture");
@@ -84,18 +83,18 @@ namespace Love
             var time = e.Packet.Timeval.Date;
             var len = e.Packet.Data.Length;
 
-            var packet = PacketDotNet.Packet.ParsePacket(e.Packet.LinkLayerType, e.Packet.Data);
-            if (packet is PacketDotNet.EthernetPacket)
+            var packet = Packet.ParsePacket(e.Packet.LinkLayerType, e.Packet.Data);
+            if (packet is EthernetPacket)
             {
                 PacketLimit++;
-                var eth = ((PacketDotNet.EthernetPacket) packet);
+                var eth = ((EthernetPacket) packet);
                 if (!SourceMac.Contains(eth.SourceHardwareAddress) && !Equals(eth.SourceHardwareAddress, LocalMac))
                     SourceMac.Add(eth.SourceHardwareAddress);
             }
-            var tcpPacket = packet.Extract<PacketDotNet.TcpPacket>();
+            var tcpPacket = packet.Extract<TcpPacket>();
             if (tcpPacket != null)
             {
-                var ipPacket = (PacketDotNet.IPPacket) tcpPacket.ParentPacket;
+                var ipPacket = (IPPacket) tcpPacket.ParentPacket;
                 var srcIp = ipPacket.SourceAddress;
                 var dstIp = ipPacket.DestinationAddress;
                 int srcPort = tcpPacket.SourcePort;
