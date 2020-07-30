@@ -43,41 +43,14 @@ namespace Love
             Console.WriteLine("-- Started Capture");
             LocalMac = device.MacAddress;
             device.StartCapture();
-            while (SourceMac.Count < 1)
-            {
-                Thread.Sleep(1000);
-            }
-            Cleanup(device);
+            // Wait for 'Enter' from the user.
+            Console.ReadLine();
+            // Stop the capturing process
+            device.StopCapture();
+            Console.WriteLine("-- Capture stopped.");
+
         }
 
-        private static void Cleanup(ICaptureDevice device)
-        {
-            try
-            {
-                // Try and wait for the thread
-                Thread.Sleep(1000);
-                device.StopCapture();
-                Console.WriteLine("-- Capture stopped.");
-                //Console.WriteLine(device.Statistics.ToString());
-                device.Close();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
-            var macList = new List<string>();
-            foreach (var mac in SourceMac)
-            {
-                macList.Add(string.Join(":", mac.GetAddressBytes().Select(x => x.ToString("X2"))));
-            }
-
-            foreach (var mac in macList)
-            {
-                Console.WriteLine($"{mac}");
-            }
-        }
-        
         private static void device_OnPacketArrival(object sender, CaptureEventArgs e)
         {
             var time = e.Packet.Timeval.Date;
@@ -86,10 +59,12 @@ namespace Love
             var packet = Packet.ParsePacket(e.Packet.LinkLayerType, e.Packet.Data);
             if (packet is EthernetPacket)
             {
-                PacketLimit++;
                 var eth = ((EthernetPacket) packet);
                 if (!SourceMac.Contains(eth.SourceHardwareAddress) && !Equals(eth.SourceHardwareAddress, LocalMac))
+                {
+                    Console.WriteLine(string.Join(":", eth.SourceHardwareAddress.GetAddressBytes().Select(x => x.ToString("X2"))));
                     SourceMac.Add(eth.SourceHardwareAddress);
+                }
             }
             var tcpPacket = packet.Extract<TcpPacket>();
             if (tcpPacket != null)
